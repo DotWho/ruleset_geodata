@@ -20,7 +20,7 @@ jobs:
           echo "singbox_rules_old_version=$(curl -sSL https://raw.githubusercontent.com/SagerNet/sing-box/docs/configuration/rule-set/source-format/index.html | awk '/<li>/ {second_last=current; current=$0} END {print second_last}' | sed -n 's/^<li>\([0-9]\+\).*/\1/p')" >> ${GITHUB_ENV}
           echo "singbox_core_version=$(curl -sSL https://raw.githubusercontent.com/SagerNet/sing-box/docs/configuration/rule-set/source-format/index.html | awk '/<li>/ {last=$0} END {print last}' | sed -n 's/.*\([0-9]\+\.[0-9]\+\.[0-9]\+\).*/\1/p')" >> ${GITHUB_ENV}
           echo "singbox_rules_version=$(curl -sSL https://raw.githubusercontent.com/SagerNet/sing-box/docs/configuration/rule-set/source-format/index.html | awk '/<li>/ {last=$0} END {print last}' | sed -n 's/^<li>\([0-9]\+\).*/\1/p')" >> ${GITHUB_ENV}
-          echo "domains_download_url=https://raw.githubusercontent.com/DustinWin/domain-list-custom/domains" >> ${GITHUB_ENV}
+          echo "domains_download_url=https://github.com/DustinWin/domain-list-custom/releases/download/domains" >> ${GITHUB_ENV}
           echo "ips_download_url=https://github.com/DustinWin/geoip/releases/download/ips" >> ${GITHUB_ENV}
         shell: bash
 
@@ -57,12 +57,23 @@ jobs:
           for arch1 in "${archs1[@]}"; do
             curl -sSL "${domains_download_url}/${arch1}.list" | sed -e 's/DOMAIN,/full:/' -e 's/DOMAIN-SUFFIX,//' -e 's/DOMAIN-KEYWORD,/keyword:/' > "./mydata/${arch1}"
           done
-          curl -sSL "${domains_download_url}/fakeip-filter.list" | grep -v '\.\*' | sed -e 's/DOMAIN,/full:/' -e 's/DOMAIN-SUFFIX,//' -e 's/DOMAIN-KEYWORD,/keyword:/' > ./mydata/fakeip-filter
+          curl -sSL "${domains_download_url}/fakeip-filter.list" | grep -v 'DOMAIN-REGEX,' | sed -e 's/DOMAIN,/full:/' -e 's/DOMAIN-SUFFIX,//' > ./mydata/fakeip-filter
+          cat <<EOF >> ./mydata/fakeip-filter
+          keyword:ntp
+          keyword:time
+          keyword:stun
+          EOF
+          curl -sSL "${domains_download_url}/fakeip-filter.list" | grep 'DOMAIN-REGEX,' | grep -Ev 'ntp|time|stun' | sed 's/DOMAIN-REGEX,/regexp:/' >> ./mydata/fakeip-filter
           go run ./ --datapath=./mydata/ --outputname geosite-all.dat
 
           # Generate `mihomo` geosite-all-lite.dat
           rm -f ./mydata/ads ./mydata/fakeip-filter
-          curl -sSL "${domains_download_url}/fakeip-filter-lite.list" | grep -v '\.\*' | sed -e 's/DOMAIN,/full:/' -e 's/DOMAIN-SUFFIX,//' -e 's/DOMAIN-KEYWORD,/keyword:/' > ./mydata/fakeip-filter-lite
+          curl -sSL "${domains_download_url}/fakeip-filter-lite.list" | grep -v 'DOMAIN-REGEX,' | sed -e 's/DOMAIN,/full:/' -e 's/DOMAIN-SUFFIX,//' > ./mydata/fakeip-filter-lite
+          cat <<EOF >> ./mydata/fakeip-filter-lite
+          keyword:ntp
+          keyword:time
+          keyword:stun
+          EOF
           go run ./ --datapath=./mydata/ --outputname geosite-all-lite.dat
 
           # Generate `mihomo` geosite.dat
@@ -70,12 +81,23 @@ jobs:
           for arch2 in "${archs2[@]}"; do
             curl -sSL "${domains_download_url}/${arch2}.list" | sed -e 's/DOMAIN,/full:/' -e 's/DOMAIN-SUFFIX,//' -e 's/DOMAIN-KEYWORD,/keyword:/' > "./mydata/${arch2}"
           done
-          curl -sSL "${domains_download_url}/fakeip-filter.list" | grep -v '\.\*' | sed -e 's/DOMAIN,/full:/' -e 's/DOMAIN-SUFFIX,//' -e 's/DOMAIN-KEYWORD,/keyword:/' > ./mydata/fakeip-filter
+          curl -sSL "${domains_download_url}/fakeip-filter.list" | grep -v 'DOMAIN-REGEX,' | sed -e 's/DOMAIN,/full:/' -e 's/DOMAIN-SUFFIX,//' > ./mydata/fakeip-filter
+          cat <<EOF >> ./mydata/fakeip-filter
+          keyword:ntp
+          keyword:time
+          keyword:stun
+          EOF
+          curl -sSL "${domains_download_url}/fakeip-filter.list" | grep 'DOMAIN-REGEX,' | grep -Ev 'ntp|time|stun' | sed 's/DOMAIN-REGEX,/regexp:/' >> ./mydata/fakeip-filter
           go run ./ --datapath=./mydata/ --outputname geosite.dat
 
           # Generate `mihomo` geosite-lite.dat
           rm -f ./mydata/ads ./mydata/fakeip-filter
-          curl -sSL "${domains_download_url}/fakeip-filter-lite.list" | grep -v '\.\*' | sed -e 's/DOMAIN,/full:/' -e 's/DOMAIN-SUFFIX,//' -e 's/DOMAIN-KEYWORD,/keyword:/' > ./mydata/fakeip-filter-lite
+          curl -sSL "${domains_download_url}/fakeip-filter-lite.list" | grep -v 'DOMAIN-REGEX,' | sed -e 's/DOMAIN,/full:/' -e 's/DOMAIN-SUFFIX,//' > ./mydata/fakeip-filter-lite
+          cat <<EOF >> ./mydata/fakeip-filter-lite
+          keyword:ntp
+          keyword:time
+          keyword:stun
+          EOF
           go run ./ --datapath=./mydata/ --outputname geosite-lite.dat
 
           # Generate `mihomo` geosite-mini.dat
@@ -139,14 +161,33 @@ jobs:
           for domain in "${domains[@]}"; do
             mkdir -p "./tools/domains/${domain}/" "./tools/rules/${domain}/"
             curl -sSL "${domains_download_url}/${domain}.list" | sed -e 's/DOMAIN,//' -e 's/DOMAIN-SUFFIX,/\+\./' > "./tools/domains/${domain}/${domain}.list"
-            curl -sSL "${domains_download_url}/${domain}.list" | grep -v '\.\*' > "./tools/rules/${domain}/${domain}.list"
+            curl -sSL "${domains_download_url}/${domain}.list" > "./tools/rules/${domain}/${domain}.list"
           done
-          mkdir -p ./tools/domains/fakeip-filter/ ./tools/rules/fakeip-filter/
-          curl -sSL "${domains_download_url}/fakeip-filter.list" | grep -v 'DOMAIN-KEYWORD,' | sed -e 's/DOMAIN,//' -e 's/DOMAIN-SUFFIX,/\+\./' > ./tools/domains/fakeip-filter/fakeip-filter.list
-          curl -sSL "${domains_download_url}/fakeip-filter.list" | grep -v '\.\*' > ./tools/rules/fakeip-filter/fakeip-filter.list
+          mkdir -p ./tmp/ ./tools/domains/fakeip-filter/ ./tools/rules/fakeip-filter/
+          curl -sSL "${domains_download_url}/fakeip-filter.list" | grep -v 'DOMAIN-REGEX,' | sed -e 's/DOMAIN,//' -e 's/DOMAIN-SUFFIX,/\+\./' > ./tmp/temp-fakeip-filter-domains.txt
+          curl -sSL "${domains_download_url}/fakeip-filter.list" | grep 'DOMAIN-REGEX,' | sed -e 's/\\./\./g' -e 's/\[\^.\]+/*/g' -e 's/\^\.\*/\^\+/' -e 's/.*\^//; s/\$$//' >> ./tmp/temp-fakeip-filter-domains.txt
+          sort --ignore-case ./tmp/temp-fakeip-filter-domains.txt > ./tools/domains/fakeip-filter/fakeip-filter.list
+          curl -sSL "${domains_download_url}/fakeip-filter.list" | grep -v 'DOMAIN-REGEX,' > ./tmp/temp-fakeip-filter-rules.txt
+          cat <<EOF >> ./tmp/temp-fakeip-filter-rules.txt
+          DOMAIN-KEYWORD,ntp
+          DOMAIN-KEYWORD,time
+          DOMAIN-KEYWORD,stun
+          EOF
+          curl -sSL "${domains_download_url}/fakeip-filter.list" | grep 'DOMAIN-REGEX,' | grep -Ev 'ntp|time|stun' >> ./tmp/temp-fakeip-filter-rules.txt
+          sort --ignore-case ./tmp/temp-fakeip-filter-rules.txt > ./tools/rules/fakeip-filter/fakeip-filter.list
+
           mkdir -p ./tools/domains/fakeip-filter-lite/ ./tools/rules/fakeip-filter-lite/
-          curl -sSL "${domains_download_url}/fakeip-filter-lite.list" | grep -v 'DOMAIN-KEYWORD,' | sed -e 's/DOMAIN,//' -e 's/DOMAIN-SUFFIX,/\+\./' > ./tools/domains/fakeip-filter-lite/fakeip-filter-lite.list
-          curl -sSL "${domains_download_url}/fakeip-filter-lite.list" | grep -v '\.\*' > ./tools/rules/fakeip-filter-lite/fakeip-filter-lite.list
+          curl -sSL "${domains_download_url}/fakeip-filter-lite.list" | grep -v 'DOMAIN-REGEX,' | sed -e 's/DOMAIN,//' -e 's/DOMAIN-SUFFIX,/\+\./' > ./tmp/temp-fakeip-filter-lite-domains.txt
+          curl -sSL "${domains_download_url}/fakeip-filter-lite.list" | grep 'DOMAIN-REGEX,' | sed -e 's/\\./\./g' -e 's/\[\^.\]+/*/g' -e 's/\^\.\*/\^\+/' -e 's/.*\^//; s/\$$//' >> ./tmp/temp-fakeip-filter-lite-domains.txt
+          sort --ignore-case ./tmp/temp-fakeip-filter-lite-domains.txt > ./tools/domains/fakeip-filter-lite/fakeip-filter-lite.list
+          curl -sSL "${domains_download_url}/fakeip-filter-lite.list" | grep -v 'DOMAIN-REGEX,' > ./tmp/temp-fakeip-filter-lite-rules.txt
+          cat <<EOF >> ./tmp/temp-fakeip-filter-lite-rules.txt
+          DOMAIN-KEYWORD,ntp
+          DOMAIN-KEYWORD,time
+          DOMAIN-KEYWORD,stun
+          EOF
+          sort --ignore-case ./tmp/temp-fakeip-filter-lite-rules.txt > ./tools/rules/fakeip-filter-lite/fakeip-filter-lite.list
+          rm -rf ./tmp*
 
           for arch in "${archs[@]}"; do
             mkdir -p "./tools/rules/${arch}/"
