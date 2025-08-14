@@ -92,7 +92,6 @@ jobs:
           cd ./tools/
           sed -i 's/"version": ${{ env.singbox_rules_old_version }}/"version": ${{ env.singbox_rules_version }}/' ./convert.sh
           chmod +x ./convert.sh && ./convert.sh
-          rm -rf ./sing-box* ./rules*
           mv -f ./*.json ../sing-box-ruleset/
 
       - name: Release and upload `sing-box-ruleset-compatible` assets
