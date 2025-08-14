@@ -228,8 +228,7 @@ jobs:
           cd ./tools/
           sed -i 's/"version": 1/"version": ${{ env.singbox_rules_old_version }}/' ./convert.sh
           chmod +x ./convert.sh && ./convert.sh
-          rm -rf ./sing-box* ./*.json
-          mv -f ./*.srs ../sing-box-ruleset-compatible/
+          mv -f ./*.json ../sing-box-ruleset-compatible/
 
       - name: Generate `sing-box` rule_set
         run: |
@@ -241,7 +240,7 @@ jobs:
           sed -i 's/"version": ${{ env.singbox_rules_old_version }}/"version": ${{ env.singbox_rules_version }}/' ./convert.sh
           chmod +x ./convert.sh && ./convert.sh
           rm -rf ./sing-box* ./rules*
-          mv -f ./*.srs ../sing-box-ruleset/
+          mv -f ./*.json ../sing-box-ruleset/
 
       - name: Release and upload `mihomo` assets
         uses: svenstaro/upload-release-action@v2
