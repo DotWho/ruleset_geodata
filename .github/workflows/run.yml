@@ -228,20 +228,8 @@ jobs:
           cd ./tools/
           sed -i 's/"version": 1/"version": ${{ env.singbox_rules_old_version }}/' ./convert.sh
           chmod +x ./convert.sh && ./convert.sh
-          rm -rf ./sing-box* ./*.json
+          mv -f ./*.json ../sing-box-ruleset-compatible/
           mv -f ./*.srs ../sing-box-ruleset-compatible/
-
-      - name: Generate `sing-box` rule_set
-        run: |
-          wget "https://github.com/SagerNet/sing-box/releases/download/v${{ env.singbox_core_version }}/sing-box-${{ env.singbox_core_version }}-linux-amd64.tar.gz" -O - | tar -zxf - -C ./tools/
-          mv -f "./tools/sing-box-${{ env.singbox_core_version }}-linux-amd64/sing-box" ./tools/sing-box
-
-          mkdir -p ./sing-box-ruleset/
-          cd ./tools/
-          sed -i 's/"version": ${{ env.singbox_rules_old_version }}/"version": ${{ env.singbox_rules_version }}/' ./convert.sh
-          chmod +x ./convert.sh && ./convert.sh
-          rm -rf ./sing-box* ./rules*
-          mv -f ./*.srs ../sing-box-ruleset/
 
       - name: Release and upload `sing-box-ruleset-compatible` assets
         uses: svenstaro/upload-release-action@v2
