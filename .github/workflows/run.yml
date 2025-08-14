@@ -226,7 +226,7 @@ jobs:
 
           mkdir -p ./sing-box-ruleset-compatible/
           cd ./tools/
-          sed -i 's/"version": 1/"version": 3/' ./convert.sh
+          sed -i 's/"version": 1/"version": ${{ env.singbox_rules_old_version }}/' ./convert.sh
           chmod +x ./convert.sh && ./convert.sh
           mv -f ./*.json ../sing-box-ruleset-compatible/
           mv -f ./*.srs ../sing-box-ruleset-compatible/
@@ -240,7 +240,7 @@ jobs:
           overwrite: true
           body: |
             [sing-box](https://github.com/SagerNet/sing-box) rule_set 规则集文件
-            适用于 sing-box v${{ env.singbox_core_old_version }}-v${{ env.singbox_core_version }}（不包含）版本的内核（`"version": 3`）
+            适用于 sing-box v${{ env.singbox_core_old_version }}-v${{ env.singbox_core_version }}（不包含）版本的内核（`"version": ${{ env.singbox_rules_old_version }}`）
             规则集文件更新于 ${{ env.update_version }}
           file_glob: true
           file: ./sing-box-ruleset-compatible/*
