@@ -1,0 +1,25 @@
+{
+  "version": 3,
+  "rules": [
+    {
+      "domain": [
+        "adguardteam.github.io",
+        "adrules.top",
+        "anti-ad.net",
+        "local.adguard.org",
+        "static.adtidy.org"
+      ],
+      "domain_keyword": [
+        "ntp",
+        "stun",
+        "time"
+      ],
+      "domain_suffix": [
+        "ntp.org.cn",
+        "pool.ntp.org",
+        "stun.playstation.net",
+        "time.edu.cn"
+      ]
+    }
+  ]
+}
